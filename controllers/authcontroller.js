@@ -4,6 +4,33 @@ import passport from "passport";
 
 const saltRounds = 10;
 
+// Get users
+export const getUser = async (req, res) => {
+  console.log("Get user!");
+
+  const email = req.query.email;
+
+  try {
+    const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+    const user = result.rows[0];
+
+    res.status(200).json({
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        name: user.name,
+        profile_picture: user.profile_picture,
+        bio: user.bio,
+      },
+    });
+  } catch (err) {
+    console.err("Get user error:", err);
+
+    return res.status(500).json({ message: "Internal server error!" });
+  }
+};
+
 // Sign up new user
 export const signupUser = async (req, res) => {
   const { email, password } = req.body;
@@ -82,5 +109,41 @@ export const getAuthCheck = (req, res) => {
       isAuthenticated: false,
       user: null,
     });
+  }
+};
+
+export const editProfile = async (req, res) => {
+  console.log("Edit profile!");
+
+  const { id, photo, username, name, email, bio } = req.body.submission;
+
+  if (!username || !name) {
+    return res.status(400).json({ message: "username and name are required!" });
+  }
+
+  try {
+    // Update the user profile.
+    const result = await db.query(
+      "UPDATE users SET profile_picture = $1, username = $2, name = $3, email = $4, bio = $5 WHERE id = $6 RETURNING *;",
+      [photo, username, name, email, bio, id]
+    );
+
+    const user = result.rows[0];
+
+    res.status(200).json({
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        profile_picture: user.profile_picture,
+        bio: user.bio,
+      },
+      message: "Success!",
+    });
+  } catch (editErr) {
+    console.log("Error editing profile:", editErr);
+
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
