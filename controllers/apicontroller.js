@@ -132,8 +132,34 @@ export const updateReviewBooks = async (req, res) => {
       [rating, notes, dateRead, reviewed, userId, bookId]
     );
 
-    res.status(200).json({ message: "Reviewed books updated successfully", data: result.rows[0] });
+    const result2 = await db.query(
+      `
+      SELECT 
+        books.id, books.title, books.author, books.cover_image, users.id, users.name, users.profile_picture, userbooks.rating, userbooks.notes, userbooks.read_date
+      FROM 
+        userbooks
+      JOIN 
+        books
+      ON
+        userbooks.book_id = books.id
+      JOIN
+        users
+      ON 
+        userbooks.user_id = users.id
+      WHERE 
+        users.id = $1
+      AND 
+        userbooks.reviewed = true;
+      `,
+      [userId]
+    );
+
+    await db.query("COMMIT");
+
+    res.status(200).json({ message: "Reviewed books updated successfully", data: result2.rows });
   } catch (err) {
+    await db.query("ROLLBACK");
+
     console.log("Error Updating reviewed books!", err);
 
     res.status(500).json({ message: "internal server error!", error: "Error deleting books" });
