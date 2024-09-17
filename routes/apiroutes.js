@@ -4,6 +4,8 @@ import {
   addUserBooks,
   deleteUserBook,
   getBooks,
+  getReviewBookPosts,
+  getReviewPostsDetails,
   getUserBooks,
   getUserReviewedBooks,
   updateReviewBooks,
@@ -15,6 +17,8 @@ const router = express.Router();
 router.get("/api/search", getBooks);
 router.get("/api/getUserBooks", getUserBooks);
 router.get("/api/getUserReviewedBooks", getUserReviewedBooks);
+router.get("/api/getReviewBookPosts", getReviewBookPosts);
+router.get("/api/getReviewPostsDetails", getReviewPostsDetails);
 //
 router.post("/api/addBookmark", addBooks);
 router.post("/api/userBooks", addUserBooks);

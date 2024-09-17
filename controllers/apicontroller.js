@@ -1,5 +1,6 @@
 import axios from "axios";
 import db from "../config/db.js";
+import { Server } from "socket.io";
 
 export const getBooks = async (req, res) => {
   const query = req.query.q;
@@ -123,6 +124,7 @@ export const updateReviewBooks = async (req, res) => {
   const { userId, bookId, rating, dateRead, notes, reviewed } = req.body;
 
   try {
+    // Update userbooks. emit the socket.
     const result = await db.query(
       `
       UPDATE userbooks
@@ -132,6 +134,7 @@ export const updateReviewBooks = async (req, res) => {
       [rating, notes, dateRead, reviewed, userId, bookId]
     );
 
+    // Fetch the updated userbooks data.
     const result2 = await db.query(
       `
       SELECT 
@@ -175,7 +178,7 @@ export const getUserReviewedBooks = async (req, res) => {
     const result = await db.query(
       `
       SELECT 
-        books.id, books.title, books.author, books.cover_image, users.id, users.name, users.profile_picture, userbooks.rating, userbooks.notes, userbooks.read_date
+        books.id AS book_id, books.title, books.author, books.cover_image, users.id, users.name, users.profile_picture, userbooks.rating, userbooks.notes, userbooks.read_date
       FROM 
         userbooks
       JOIN 
@@ -199,6 +202,79 @@ export const getUserReviewedBooks = async (req, res) => {
     res.status(200).json({ message: "Success!", data: books });
   } catch (err) {
     console.log("Error getting user reviewed books:", err);
+
+    res.status(500).json({ message: "Internal server error!", error: err });
+  }
+};
+
+export const getReviewBookPosts = async (req, res) => {
+  try {
+    const result = await db.query(
+      `
+      SELECT	
+        books.id AS book_id, books.title, books.author, books.cover_image, users.id, users.name, users.profile_picture, userbooks.rating, userbooks.notes, userbooks.read_date
+      FROM 
+	      userbooks
+      JOIN 
+	      books
+      ON 
+	      userbooks.book_id = books.id
+      JOIN 
+	      users 
+      ON 
+	      userbooks.user_id = users.id
+      WHERE 
+	      userbooks.reviewed = true;
+      `
+    );
+
+    // Emit a socket for real-time update to the connected clients.
+    const io = req.app.get("socketio"); // socket.io instance for the app.
+    io.emit("reviewBookPosts", result.rows); // Send the update book data to the client.
+
+    res.status(200).json({ message: "success!", data: result.rows });
+  } catch (err) {
+    console.log("Error getting user book posts", err);
+
+    res
+      .status(500)
+      .json({ message: "Internal server error!", error: "Error getting user book posts" });
+  }
+};
+
+export const getReviewPostsDetails = async (req, res) => {
+  console.log("Getting post details!");
+
+  const { userId, bookId } = req.query;
+
+  try {
+    const result = await db.query(
+      `
+      SELECT
+        books.id, books.title, books.author, books.cover_image, users.id, users.name, users.profile_picture, 		userbooks.rating, userbooks.notes, userbooks.read_date
+      FROM 
+	      userbooks
+      JOIN 
+	      books
+      ON 
+	      userbooks.book_id = books.id
+      JOIN 
+	      users 
+      ON 
+	      userbooks.user_id = users.id
+      WHERE 
+	      userbooks.reviewed = true
+      AND 
+	      users.id = $1
+      AND 
+	      userbooks.book_id = $2;
+      `,
+      [userId, bookId]
+    );
+
+    res.status(200).json({ message: "Review Post details success!", data: result.rows[0] });
+  } catch (err) {
+    console.log("Error getting user reviewed books details:", err);
 
     res.status(500).json({ message: "Internal server error!", error: err });
   }
