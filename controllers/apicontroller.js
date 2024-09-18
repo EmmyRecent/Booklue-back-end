@@ -138,7 +138,7 @@ export const updateReviewBooks = async (req, res) => {
     const result2 = await db.query(
       `
       SELECT 
-        books.id, books.title, books.author, books.cover_image, users.id, users.name, users.profile_picture, userbooks.rating, userbooks.notes, userbooks.read_date
+        books.id, books.title, books.author, books.cover_image, users.id, users.name, users.profile_picture, userbooks.rating, userbooks.notes, userbooks.read_date, userbooks.reviewed
       FROM 
         userbooks
       JOIN 
