@@ -25,7 +25,7 @@ export const getUser = async (req, res) => {
       },
     });
   } catch (err) {
-    console.err("Get user error:", err);
+    console.error("Get user error:", err);
 
     return res.status(500).json({ message: "Internal server error!" });
   }
@@ -96,8 +96,8 @@ export const signupUser = async (req, res) => {
 };
 
 export const getAuthCheck = (req, res) => {
-  console.log("Authenticated:", req.isAuthenticated());
-  console.log("user:", req.user);
+  // console.log("Authenticated user:", req.isAuthenticated());
+  // console.log("user authenticated:", req.user);
 
   if (req.isAuthenticated()) {
     res.json({

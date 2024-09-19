@@ -24,6 +24,8 @@ passport.use(
 
             if (valid) {
               console.log("password is valid");
+              // console.log("Authenticating");
+              // console.log("User:", user);
 
               return cb(null, user);
             } else {
@@ -47,10 +49,12 @@ passport.use(
   )
 );
 
+// Serialize user to store in session
 passport.serializeUser((user, cb) => {
   cb(null, user.id); // Store user ID in session.
 });
 
+// Deserialize user from session
 passport.deserializeUser(async (id, cb) => {
   try {
     const result = await db.query("SELECT * FROM users WHERE id = $1", [id]);

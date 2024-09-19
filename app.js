@@ -27,13 +27,18 @@ app.set("socketio", io);
 // Enable CORS for all requests
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
       maxAge: 1000 * 60 * 30, // 30 minutes
       secure: process.env.NODE_ENV === "production", // Use secure cookies in production
