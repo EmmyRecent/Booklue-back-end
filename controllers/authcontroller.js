@@ -95,6 +95,7 @@ export const signupUser = async (req, res) => {
   }
 };
 
+// A function to check if user is logged in or not.
 export const getAuthCheck = (req, res) => {
   // console.log("Authenticated user:", req.isAuthenticated());
   // console.log("user authenticated:", req.user);
@@ -110,6 +111,26 @@ export const getAuthCheck = (req, res) => {
       user: null,
     });
   }
+};
+
+// A function to log user out.
+export const logoutUser = (req, res) => {
+  console.log("Logging the user out!!!");
+
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ message: "Logout failed!" });
+    }
+
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Could not destroy session" });
+      }
+    });
+
+    res.clearCookie("connect.sid"); // Clear session cookie.
+    return res.status(200).json({ message: "Logged out successfully" });
+  });
 };
 
 export const editProfile = async (req, res) => {

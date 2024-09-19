@@ -1,5 +1,11 @@
 import express from "express";
-import { editProfile, getAuthCheck, getUser, signupUser } from "../controllers/authcontroller.js";
+import {
+  editProfile,
+  getAuthCheck,
+  getUser,
+  logoutUser,
+  signupUser,
+} from "../controllers/authcontroller.js";
 import passport from "../config/passport.js";
 
 const router = express.Router();
@@ -40,6 +46,8 @@ router.post("/login", (req, res, next) => {
 router.post("/signup", signupUser);
 
 router.post("/editProfile", editProfile);
+
+router.post("/logout", logoutUser);
 
 router.get("/api/auth/check", getAuthCheck);
 
