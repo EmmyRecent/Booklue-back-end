@@ -24,14 +24,12 @@ passport.use(
 
             if (valid) {
               console.log("password is valid");
-              // console.log("Authenticating");
-              // console.log("User:", user);
 
               return cb(null, user);
             } else {
               console.log("password is invalid");
 
-              return cb(null, false, { message: "Incorrect password" });
+              return cb(null, false, { message: "Incorrect password, please try again!" });
             }
           });
         } else {

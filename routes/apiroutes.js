@@ -6,6 +6,7 @@ import {
   getBooks,
   getReviewBookPosts,
   getReviewPostsDetails,
+  getSortUserBooks,
   getUserBooks,
   getUserReviewedBooks,
   updateReviewBooks,
@@ -19,7 +20,9 @@ router.get("/api/getUserBooks", getUserBooks);
 router.get("/api/getUserReviewedBooks", getUserReviewedBooks);
 router.get("/api/getReviewBookPosts", getReviewBookPosts);
 router.get("/api/getReviewPostsDetails", getReviewPostsDetails);
+router.get("/api/getSortUserBooks", getSortUserBooks);
 //
+
 router.post("/api/addBookmark", addBooks);
 router.post("/api/userBooks", addUserBooks);
 router.post("/api/updateReviewBooks", updateReviewBooks);

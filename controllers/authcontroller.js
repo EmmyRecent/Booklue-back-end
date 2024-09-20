@@ -142,7 +142,9 @@ export const editProfile = async (req, res) => {
   const { id, photo, username, name, email, bio } = req.body.submission;
 
   if (!username || !name) {
-    return res.status(400).json({ message: "username and name are required!" });
+    return res
+      .status(400)
+      .json({ message: "Cannot update profile, username and name are required!" });
   }
 
   try {

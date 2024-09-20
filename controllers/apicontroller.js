@@ -96,6 +96,68 @@ export const getUserBooks = async (req, res) => {
   }
 };
 
+export const getSortUserBooks = async (req, res) => {
+  const { id, sort } = req.query;
+
+  // Valid sort columns for safety against SQL injection
+  const validSortColumns = ["Title", "Author", "read_date", "rating"];
+
+  // Ensure sort column is valid, default to 'Title' if invalid
+  const clientSortColumn = validSortColumns.includes(sort) ? sort : "Title";
+  // console.log("Client sort:", sort);
+  // console.log("Sorting reviewed books by:", clientSortColumn);
+
+  // Track if it's a userbooks or books column
+  let sortColumn;
+
+  const validUserBooksColumns = ["rating", "read_date"];
+  const validBooksColumns = ["Title", "Author"];
+
+  // Set sortColumn based on where the field is coming from.
+  if (validUserBooksColumns.includes(clientSortColumn)) {
+    sortColumn = `userbooks.${clientSortColumn}`;
+  } else if (validBooksColumns.includes(clientSortColumn)) {
+    sortColumn = `books.${clientSortColumn.toLowerCase()}`; // Ensure lowercase for column names in DB
+  } else {
+    // Default to books.title if no valid column provided
+    sortColumn = "books.title";
+  }
+
+  try {
+    const result = await db.query(
+      `
+       SELECT 
+        books.id, books.title, books.author, books.cover_image, users.id, users.name, users.profile_picture, userbooks.rating, userbooks.notes, userbooks.read_date, userbooks.reviewed
+      FROM 
+        userbooks
+      JOIN 
+        books
+      ON
+        userbooks.book_id = books.id
+      JOIN
+        users
+      ON 
+        userbooks.user_id = users.id
+      WHERE 
+        users.id = $1
+      AND 
+        userbooks.reviewed = true
+      ORDER BY 
+       ${sortColumn} ASC;
+      `,
+      [id]
+    );
+
+    console.log(`Sorted books by ${sortColumn}: ${result.rows}`);
+
+    res.status(200).json({ message: "Success!", data: result.rows });
+  } catch (err) {
+    console.log("Error getting sort review books:", err.stack);
+
+    res.status(500).json({ message: "Internal server error!", error: err });
+  }
+};
+
 export const deleteUserBook = async (req, res) => {
   const { user_id, book_id } = req.query;
 
@@ -122,6 +184,10 @@ export const updateReviewBooks = async (req, res) => {
   console.log(req.body);
 
   const { userId, bookId, rating, dateRead, notes, reviewed } = req.body;
+
+  if (!rating || !notes || !dateRead) {
+    return res.status(400).json({ message: "Cannot review book, please enter review info!" });
+  }
 
   try {
     // Update userbooks. emit the socket.
@@ -152,20 +218,27 @@ export const updateReviewBooks = async (req, res) => {
       WHERE 
         users.id = $1
       AND 
-        userbooks.reviewed = true;
+        userbooks.reviewed = true
+      ORDER BY
+        books.title 
+      ASC;
       `,
       [userId]
     );
 
     await db.query("COMMIT");
 
-    res.status(200).json({ message: "Reviewed books updated successfully", data: result2.rows });
+    return res
+      .status(200)
+      .json({ message: "Reviewed books updated successfully", data: result2.rows });
   } catch (err) {
     await db.query("ROLLBACK");
 
     console.log("Error Updating reviewed books!", err);
 
-    res.status(500).json({ message: "internal server error!", error: "Error deleting books" });
+    return res
+      .status(500)
+      .json({ message: "internal server error!", error: "Error deleting books" });
   }
 };
 
