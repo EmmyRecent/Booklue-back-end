@@ -61,25 +61,28 @@ export const signupUser = async (req, res) => {
 
           const user = result.rows[0];
 
-          req.login(user, (loginErr) => {
-            if (loginErr) {
+          req.login(user, (err) => {
+            if (err) {
               console.error("Login error:", loginErr);
 
-              return res.status(500).json({ message: "Login error" });
+              return res.status(500).json({ message: "signup failed" });
             }
-          });
 
-          // Respond with success message and user details.
-          res.status(201).json({
-            user: {
-              id: user.id,
-              email: user.email,
-              username: user.username,
-              name: user.name,
-              profile_picture: user.profile_picture,
-              bio: user.bio,
-            },
-            message: "Registration successful",
+            console.log("Sign up authenticated:", req.isAuthenticated());
+            console.log("Sign up user:", req.user);
+
+            // Respond with success message and user details.
+            return res.status(200).json({
+              message: "Registration successful",
+              user: {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                name: user.name,
+                profile_picture: user.profile_picture,
+                bio: user.bio,
+              },
+            });
           });
         } catch (dbError) {
           console.log("Error inserting user into the database:", dbError);
