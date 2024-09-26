@@ -8,6 +8,10 @@ import passport from "./config/passport.js";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import { disconnect } from "process";
+import dotenv from "dotenv";
+
+// Load environment variables.
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -29,7 +33,7 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );

@@ -6,8 +6,6 @@ const saltRounds = 10;
 
 // Get users
 export const getUser = async (req, res) => {
-  console.log("Get user!");
-
   const email = req.query.email;
 
   try {
@@ -33,7 +31,7 @@ export const getUser = async (req, res) => {
 
 // Sign up new user
 export const signupUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, username, profile_picture } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required" });
@@ -55,8 +53,8 @@ export const signupUser = async (req, res) => {
 
         try {
           const result = await db.query(
-            "INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING *",
-            [email, hash]
+            "INSERT INTO users (email, password_hash, username, profile_picture) VALUES ($1, $2, $3, $4) RETURNING *",
+            [email, hash, username, profile_picture]
           );
 
           const user = result.rows[0];
@@ -67,9 +65,6 @@ export const signupUser = async (req, res) => {
 
               return res.status(500).json({ message: "signup failed" });
             }
-
-            console.log("Sign up authenticated:", req.isAuthenticated());
-            console.log("Sign up user:", req.user);
 
             // Respond with success message and user details.
             return res.status(200).json({
@@ -100,9 +95,6 @@ export const signupUser = async (req, res) => {
 
 // A function to check if user is logged in or not.
 export const getAuthCheck = (req, res) => {
-  // console.log("Authenticated user:", req.isAuthenticated());
-  // console.log("user authenticated:", req.user);
-
   if (req.isAuthenticated()) {
     res.json({
       isAuthenticated: true,
@@ -118,8 +110,6 @@ export const getAuthCheck = (req, res) => {
 
 // A function to log user out.
 export const logoutUser = (req, res) => {
-  console.log("Logging the user out!!!");
-
   req.logout((err) => {
     if (err) {
       return res.status(500).json({ message: "Logout failed!" });
@@ -137,8 +127,6 @@ export const logoutUser = (req, res) => {
 };
 
 export const editProfile = async (req, res) => {
-  console.log("Edit profile!");
-
   const { id, photo, username, name, email, bio } = req.body.submission;
 
   if (!username || !name) {
