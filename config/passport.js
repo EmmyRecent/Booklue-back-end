@@ -2,8 +2,11 @@ import db from "./db.js";
 import passport from "passport";
 import bcrypt from "bcrypt";
 import { Strategy } from "passport-local";
+import GoogleStrategy from "passport-google-oauth20";
 
+// Local strategy.
 passport.use(
+  "local",
   new Strategy(
     { usernameField: "email" }, // Use 'email' instead of 'username'
 
@@ -41,6 +44,38 @@ passport.use(
         console.log("Error during authentication");
         console.log(err);
 
+        return cb(err);
+      }
+    }
+  )
+);
+
+// Google strategy.
+passport.use(
+  "google",
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.CALLBACK_URL,
+    },
+    async (accessToken, refreshToken, profile, cb) => {
+      // User authentication logic.
+      try {
+        const result = await db.query("SELECT * FROM users WHERE email = $1", [
+          profile._json.email,
+        ]);
+
+        if (result.rows.length === 0) {
+          const newUser = await db.query(
+            "INSERT INTO users (email, password_hash, username, profile_picture) VALUES ($1, $2, $3, $4)",
+            [profile._json.email, "google", profile._json.name, profile._json.picture]
+          );
+          return cb(null, newUser.rows[0]);
+        } else {
+          return cb(null, result.rows[0]);
+        }
+      } catch (err) {
         return cb(err);
       }
     }

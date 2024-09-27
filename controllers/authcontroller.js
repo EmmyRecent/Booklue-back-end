@@ -93,6 +93,30 @@ export const signupUser = async (req, res) => {
   }
 };
 
+export const loginFailed = (req, res) => {
+  res.status(401).json({ message: "Login failed!" });
+};
+
+export const loginSuccess = (req, res) => {
+  if (req.user) {
+    res.status(200).json({
+      message: "Login success!",
+      user: req.user,
+      // cookies: req.cookies,
+    });
+  }
+};
+
+// Google auth.
+export const googleAuth = passport.authenticate("google", {
+  scope: ["profile", "email"],
+});
+
+export const googleAuthCallback = passport.authenticate("google", {
+  successRedirect: process.env.FRONTEND_URL + "/profile",
+  failureRedirect: "/login/failed",
+});
+
 // A function to check if user is logged in or not.
 export const getAuthCheck = (req, res) => {
   if (req.isAuthenticated()) {

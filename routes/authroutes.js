@@ -3,6 +3,10 @@ import {
   editProfile,
   getAuthCheck,
   getUser,
+  googleAuth,
+  googleAuthCallback,
+  loginFailed,
+  loginSuccess,
   logoutUser,
   signupUser,
 } from "../controllers/authcontroller.js";
@@ -60,5 +64,13 @@ router.post("/logout", logoutUser);
 router.get("/api/auth/check", getAuthCheck);
 
 router.get("/user", getUser);
+
+router.get("/auth/google", googleAuth);
+
+router.get("/auth/google/callback", googleAuthCallback);
+
+router.get("/login/failed", loginFailed);
+
+router.get("/login/success", loginSuccess);
 
 export default router;
