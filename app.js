@@ -7,7 +7,8 @@ import authroutes from "./routes/authroutes.js";
 import passport from "./config/passport.js";
 import { Server } from "socket.io";
 import { createServer } from "http";
-import { disconnect } from "process";
+import process from "process";
+const { disconnect } = process;
 import dotenv from "dotenv";
 
 // Load environment variables.
